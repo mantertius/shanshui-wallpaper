@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shan Shui</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #efe8d8; }
+  #view {
+    position: absolute; top: 0; left: 0;
+    display: block;
+    will-change: transform;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<script src="gen-core.js"></script>
+<script src="engine.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
