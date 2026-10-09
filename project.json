@@ -34,11 +34,25 @@
         "type": "bool",
         "value": false
       },
-      "darkmode": {
+      "theme": {
         "order": 99,
-        "text": "Dark mode",
-        "type": "bool",
-        "value": true
+        "text": "Theme",
+        "type": "combo",
+        "value": "silk",
+        "options": [
+          {
+            "label": "Aged silk (dark)",
+            "value": "silk"
+          },
+          {
+            "label": "Gold on indigo (dark)",
+            "value": "indigo"
+          },
+          {
+            "label": "Paper (light, original)",
+            "value": "paper"
+          }
+        ]
       }
     }
   }

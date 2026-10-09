@@ -71,9 +71,14 @@ function SHANSHUI_ENGINE(port) {
     var paper = null;
     var paperPattern = null;
     var paperPeriod = 512 * (scale / ORIGINAL_SCALE);
-    var dark = m.theme === "dark";
-    // Dark mode ink: warm ivory, a little below white so it does not glare.
-    var DARK_INK = "rgb(222,210,186)";
+    // Historical grounds. "multiply" keeps dark ink on the ground, as on paper
+    // or silk; "gold" turns the ink into gold leaf on dyed indigo paper.
+    var THEMES = {
+      paper: { lo: [225, 214, 191], hi: [255, 242, 217], mode: "multiply", passes: 1 },
+      silk: { lo: [92, 68, 42], hi: [124, 94, 60], mode: "multiply", passes: 2 },
+      indigo: { lo: [16, 22, 44], hi: [30, 38, 66], mode: "gold", ink: "rgb(214,178,104)" },
+    };
+    var theme = THEMES[m.theme] || THEMES.paper;
 
     var alphaCache = new Map();
     function alphaOf(col) {
@@ -179,16 +184,12 @@ function SHANSHUI_ENGINE(port) {
         for (var j = 0; j < R / 2 + 1; j++) {
           var cc = 245 + core.Noise.noise(i * 0.1, j * 0.1) * 10;
           cc -= Math.random() * 20;
-          var r = Math.round(cc);
-          var g = Math.round(cc * 0.95);
-          var b = Math.round(cc * 0.85);
-          if (dark) {
-            // Same grain, mapped to a warm near-black (245..225 -> ~24..16).
-            var k = 16 + (cc - 225) * 0.4;
-            r = Math.round(k * 1.0 + 4);
-            g = Math.round(k * 0.94 + 3);
-            b = Math.round(k * 0.85 + 2);
-          }
+          // Same grain as the original (cc in ~225..255), mapped onto the
+          // theme's ground. For "paper" this reproduces the original exactly.
+          var t = (cc - 225) / 30;
+          var r = Math.round(theme.lo[0] + (theme.hi[0] - theme.lo[0]) * t);
+          var g = Math.round(theme.lo[1] + (theme.hi[1] - theme.lo[1]) * t);
+          var b = Math.round(theme.lo[2] + (theme.hi[2] - theme.lo[2]) * t);
           put(i, j, r, g, b);
           put(R - i, j, r, g, b);
           put(i, R - j, r, g, b);
@@ -273,16 +274,17 @@ function SHANSHUI_ENGINE(port) {
       if (paperPattern.setTransform && typeof DOMMatrix !== "undefined") {
         paperPattern.setTransform(new DOMMatrix([s, 0, 0, s, off, 0]));
       }
-      if (!dark) {
+      if (theme.mode === "multiply") {
         tctx.fillStyle = paperPattern;
         tctx.fillRect(0, 0, TW, H);
-        // The original SVG used mix-blend-mode: multiply over the paper.
+        // The original SVG used mix-blend-mode: multiply over the paper. On a
+        // dark ground one pass is too faint, so silk deepens the ink twice.
         tctx.globalCompositeOperation = "multiply";
-        tctx.drawImage(layer, 0, 0);
+        for (var pass = 0; pass < theme.passes; pass++) tctx.drawImage(layer, 0, 0);
       } else {
-        // Ink on neutral white, inverted to light ink on black, tinted, then the
-        // dark paper is screened in. White occluder fills invert to black and
-        // disappear into the paper, exactly as they vanish under multiply.
+        // Ink on neutral white, inverted to light ink on black, tinted gold, then
+        // the indigo ground is screened in. White occluder fills invert to black
+        // and disappear into the ground, exactly as they vanish under multiply.
         tctx.fillStyle = "#fff";
         tctx.fillRect(0, 0, TW, H);
         tctx.globalCompositeOperation = "multiply";
@@ -290,7 +292,7 @@ function SHANSHUI_ENGINE(port) {
         tctx.globalCompositeOperation = "difference";
         tctx.fillRect(0, 0, TW, H);
         tctx.globalCompositeOperation = "multiply";
-        tctx.fillStyle = DARK_INK;
+        tctx.fillStyle = theme.ink;
         tctx.fillRect(0, 0, TW, H);
         tctx.globalCompositeOperation = "screen";
         tctx.fillStyle = paperPattern;

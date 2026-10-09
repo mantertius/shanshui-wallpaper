@@ -11,7 +11,7 @@ The generator is the original code, extracted unchanged except for its output fo
 1. Download `shanshui-wallpaper.zip` from the [latest release](https://github.com/mantertius/shanshui-wallpaper/releases/latest) and extract it.
 2. In Wallpaper Engine, go to **Open Wallpaper** → **Open from File** and choose the extracted `index.html`.
    Alternatively, extract the zip into `wallpaper_engine/projects/myprojects/shanshui/`, and it shows up in your library.
-3. Properties: **Dark mode** (on by default; light ink on warm black), **Seed** (empty = new landscape each start), **Scroll speed** (px/s), **Pixel snap**.
+3. Properties: **Theme**: aged silk (default; dark ink on tea-brown silk, as old Song and Ming scrolls look today), gold on indigo (gold ink on dyed indigo paper, as in Buddhist sutras), or the original light paper, **Seed** (empty = new landscape each start), **Scroll speed** (px/s), **Pixel snap**.
    The FPS limit set in Wallpaper Engine's general settings is respected.
 
 Outside Wallpaper Engine: `node tools/serve.mjs` and open `http://localhost:8123/?seed=abc&speed=40`.
@@ -46,7 +46,7 @@ Measured in Chromium: 60 fps (p99 frame 16.9 ms), no long tasks, 3 MB main-threa
 | `main.js` | Display, scrolling, Wallpaper Engine property listener. |
 | `tools/` | `build.mjs` (extract generator), `probe.cjs` (generation cost / spill), `soak.cjs` (memory soak), `serve.mjs` (preview). |
 
-Debug switches: `?noworker=1` forces the main-thread fallback; `?theme=light` picks the light paper.
+Debug switches: `?noworker=1` forces the main-thread fallback; `?theme=silk|indigo|paper` picks the theme.
 
 ## License
 
