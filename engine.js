@@ -71,6 +71,9 @@ function SHANSHUI_ENGINE(port) {
     var paper = null;
     var paperPattern = null;
     var paperPeriod = 512 * (scale / ORIGINAL_SCALE);
+    var dark = m.theme === "dark";
+    // Dark mode ink: warm ivory, a little below white so it does not glare.
+    var DARK_INK = "rgb(222,210,186)";
 
     var alphaCache = new Map();
     function alphaOf(col) {
@@ -179,6 +182,13 @@ function SHANSHUI_ENGINE(port) {
           var r = Math.round(cc);
           var g = Math.round(cc * 0.95);
           var b = Math.round(cc * 0.85);
+          if (dark) {
+            // Same grain, mapped to a warm near-black (245..225 -> ~24..16).
+            var k = 16 + (cc - 225) * 0.4;
+            r = Math.round(k * 1.0 + 4);
+            g = Math.round(k * 0.94 + 3);
+            b = Math.round(k * 0.85 + 2);
+          }
           put(i, j, r, g, b);
           put(R - i, j, r, g, b);
           put(i, R - j, r, g, b);
@@ -263,11 +273,29 @@ function SHANSHUI_ENGINE(port) {
       if (paperPattern.setTransform && typeof DOMMatrix !== "undefined") {
         paperPattern.setTransform(new DOMMatrix([s, 0, 0, s, off, 0]));
       }
-      tctx.fillStyle = paperPattern;
-      tctx.fillRect(0, 0, TW, H);
-      // The original SVG used mix-blend-mode: multiply over the paper.
-      tctx.globalCompositeOperation = "multiply";
-      tctx.drawImage(layer, 0, 0);
+      if (!dark) {
+        tctx.fillStyle = paperPattern;
+        tctx.fillRect(0, 0, TW, H);
+        // The original SVG used mix-blend-mode: multiply over the paper.
+        tctx.globalCompositeOperation = "multiply";
+        tctx.drawImage(layer, 0, 0);
+      } else {
+        // Ink on neutral white, inverted to light ink on black, tinted, then the
+        // dark paper is screened in. White occluder fills invert to black and
+        // disappear into the paper, exactly as they vanish under multiply.
+        tctx.fillStyle = "#fff";
+        tctx.fillRect(0, 0, TW, H);
+        tctx.globalCompositeOperation = "multiply";
+        tctx.drawImage(layer, 0, 0);
+        tctx.globalCompositeOperation = "difference";
+        tctx.fillRect(0, 0, TW, H);
+        tctx.globalCompositeOperation = "multiply";
+        tctx.fillStyle = DARK_INK;
+        tctx.fillRect(0, 0, TW, H);
+        tctx.globalCompositeOperation = "screen";
+        tctx.fillStyle = paperPattern;
+        tctx.fillRect(0, 0, TW, H);
+      }
 
       if (tile.transferToImageBitmap) return { bitmap: tile.transferToImageBitmap(), transferable: true };
       return { bitmap: tile, transferable: false };

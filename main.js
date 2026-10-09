@@ -10,7 +10,8 @@
   var TILE = 512; // device px
   var PREFETCH = 3; // tiles ahead of the right edge
 
-  var cfg = { seed: "", speed: 25, snap: false, fps: 0 };
+  var cfg = { seed: "", speed: 25, snap: false, fps: 0, theme: "dark" };
+  var currentSeed = "";
   var canvas = document.getElementById("view");
   var ctx = canvas.getContext("2d", { alpha: false });
 
@@ -28,7 +29,7 @@
   var rafId = 0;
   var shown = false;
 
-  function startEngine() {
+  function startEngine(keepSeed) {
     gen++;
     tiles.forEach(function (b) { if (b.close) b.close(); });
     tiles.clear();
@@ -48,8 +49,10 @@
     canvas.style.height = H / dpr + "px";
 
     if (!port) port = connect();
-    var seed = cfg.seed !== "" ? cfg.seed : String(Date.now());
-    port.postMessage({ type: "init", gen: gen, seed: seed, tileW: TILE, tileH: H });
+    // A theme switch repaints the same landscape; only a seed change picks a new one.
+    if (!keepSeed || !currentSeed) currentSeed = cfg.seed !== "" ? cfg.seed : String(Date.now());
+    document.body.style.background = cfg.theme === "dark" ? "#14120f" : "#efe8d8";
+    port.postMessage({ type: "init", gen: gen, seed: currentSeed, tileW: TILE, tileH: H, theme: cfg.theme });
     requestTiles();
   }
 
@@ -167,7 +170,7 @@
   var resizeTimer = 0;
   window.addEventListener("resize", function () {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(startEngine, 300);
+    resizeTimer = setTimeout(function () { startEngine(true); }, 300);
   });
   document.addEventListener("visibilitychange", function () {
     setPaused(document.hidden);
@@ -189,7 +192,13 @@
       }
       if (p.speed) cfg.speed = +p.speed.value;
       if (p.pixelsnap) cfg.snap = !!p.pixelsnap.value;
-      if (reseed && port) startEngine();
+      var retheme = false;
+      if (p.darkmode) {
+        var theme = p.darkmode.value ? "dark" : "light";
+        retheme = theme !== cfg.theme;
+        cfg.theme = theme;
+      }
+      if (port && (reseed || retheme)) startEngine(!reseed);
       wake();
     },
     applyGeneralProperties: function (p) {
@@ -202,6 +211,7 @@
   var q = new URLSearchParams(location.search);
   if (q.has("seed")) cfg.seed = q.get("seed");
   if (q.has("speed")) cfg.speed = +q.get("speed");
+  if (q.has("theme")) cfg.theme = q.get("theme") === "light" ? "light" : "dark";
 
   // Let Wallpaper Engine deliver the saved properties before the first build.
   setTimeout(function () {

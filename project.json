@@ -4,14 +4,42 @@
   "title": "Shan Shui - infinite Chinese landscape",
   "description": "Procedurally generated, infinitely scrolling shan shui landscape. Port of LingDong-'s {Shan, Shui}* (MIT), rebuilt for performance: generation and rasterization run in a Web Worker, tiles are cached as GPU bitmaps, and each frame is a single compositor transform.",
   "type": "web",
-  "tags": ["Nature", "Abstract"],
+  "tags": [
+    "Nature",
+    "Abstract"
+  ],
   "contentrating": "Everyone",
   "general": {
     "supportsaudioprocessing": false,
     "properties": {
-      "seed": { "order": 100, "text": "Seed (empty = new landscape every start)", "type": "textinput", "value": "" },
-      "speed": { "order": 101, "text": "Scroll speed (px/s)", "type": "slider", "min": 0, "max": 200, "step": 1, "value": 25, "editable": true },
-      "pixelsnap": { "order": 102, "text": "Pixel snap (crisper, steppier motion)", "type": "bool", "value": false }
+      "seed": {
+        "order": 100,
+        "text": "Seed (empty = new landscape every start)",
+        "type": "textinput",
+        "value": ""
+      },
+      "speed": {
+        "order": 101,
+        "text": "Scroll speed (px/s)",
+        "type": "slider",
+        "min": 0,
+        "max": 200,
+        "step": 1,
+        "value": 25,
+        "editable": true
+      },
+      "pixelsnap": {
+        "order": 102,
+        "text": "Pixel snap (crisper, steppier motion)",
+        "type": "bool",
+        "value": false
+      },
+      "darkmode": {
+        "order": 99,
+        "text": "Dark mode",
+        "type": "bool",
+        "value": true
+      }
     }
   }
 }
